@@ -48,9 +48,9 @@ When generating code or resuming work with any AI model, enforce the following c
 | **M3: Secrets** | `src/secret_scanner.py` (Compiled regex + Shannon entropy $> 4.5$) | ✅ Completed | Tier 1 (Regex) + Tier 2 (Entropy) + Tier 3 (Allowlist) + Masking (96% cov) |
 | **M4: AST Sinks** | `src/ast_analyzer.py` (`ast.NodeVisitor` for `eval`, `exec`, `shell=True`, etc.) | ✅ Completed | Catches code sinks; ignores comments/docstrings |
 | **M5: SQLi AST** | AST detection of dynamic SQL (`JoinedStr`, `BinOp`, `Mod`, `.format()`) | ✅ Completed | Parameterized tuples pass; f-strings flagged |
-| **M6: OSV Batch** | `src/dep_scanner.py` (`requirements.txt`, `package.json`, batch API $< 650\text{ ms}$) | 🟡 Next Up | Returns CVEs/GHSAs for vulnerable test manifests |
-| **M7: Policy Gate** | `src/aggregator.py` (Deduplication, sorting, `sys.exit(1)` on CRITICAL/HIGH) | ⬜ Pending | Blocks merge on CRITICAL; passes clean PRs |
-| **M8: Commenter** | `src/pr_commenter.py` (Idempotent Markdown upsert via GitHub API) | ⬜ Pending | Patches existing comment with zero spam |
+| **M6: OSV Batch** | `src/dep_scanner.py` (`requirements.txt`, `package.json`, batch API $< 650\text{ ms}$) | ✅ Completed | Returns CVEs/GHSAs for vulnerable test manifests |
+| **M7: Policy Gate** | `src/aggregator.py` (Deduplication, sorting, `sys.exit(1)` on CRITICAL/HIGH) | ✅ Completed | Blocks merge on CRITICAL; passes clean PRs |
+| **M8: Commenter** | `src/pr_commenter.py` (Idempotent Markdown upsert via GitHub API) | 🟡 Next Up | Patches existing comment with zero spam |
 | **M9: Docker/CI** | `Dockerfile` (non-root `uid 1001`) + `.github/workflows/security-audit.yml` | ⬜ Pending | GitHub Actions runs and completes in $< 4.8\text{s}$ |
 | **M10: Pytest** | `tests/` suite + `benchmarks/run_benchmark.py` (96.4% TPR, 74% FP drop) | ⬜ Pending | `pytest --cov=src` $\ge 85\%$ coverage |
 | **M11: Deploy** | Live validation across 3 real GitHub repositories + portfolio `README.md` | ⬜ Pending | 3 merged/blocked test PRs with screenshots |
@@ -82,14 +82,16 @@ When generating code or resuming work with any AI model, enforce the following c
 ---
 
 ## 6. Immediate Next Steps & Checkpoints
-1. **Milestones 1, 2, 3, 4 & 5 Completed:**
+1. **Milestones 1 through 7 Completed:**
    - Baseline models, configuration, and CLI harness operational (`1bbb9ab`).
    - Diff parser (`src/diff_parser.py`) executing sub-second git diff and line mapping (`b0c61a0`).
    - Hybrid Secret Scanner (`src/secret_scanner.py`) implementing Tier 1 (Regex), Tier 2 (Shannon Entropy > 4.5), Tier 3 (Allowlist), and mandatory masking (`redact_secret()`) (`b52b482`).
-   - AST Static Analyzer (`src/ast_analyzer.py`) implementing OWASP execution sinks (`AST-001`), deserialization (`AST-002`), command injection (`AST-003`), SQL injection taint detection (`AST-004`), credential assignments (`AST-005`), and weak hashes (`AST-006`).
-   - Total of 88 automated tests passing in 0.79s with 93.71% test coverage and 0 Ruff linting errors.
-2. **Execute Milestone 6 (Dependency Manifest Parser & OSV.dev Batch CVE Engine):**
-   - Implement `src/dep_scanner.py` parsing pinned packages from `requirements.txt` (PyPI) and `package.json` (npm).
-   - Construct single batch HTTP request to `POST https://api.osv.dev/v1/querybatch` with connection reuse and 3.0s timeout.
-   - Map vulnerabilities back to physical manifest lines and emit `Finding` records with category `DEPENDENCY_CVE`.
-   - Author unit tests in `tests/test_dep_scanner.py` with mocked network responses.
+   - AST Static Analyzer (`src/ast_analyzer.py`) implementing OWASP execution sinks, deserialization, command injection, SQL injection taint detection, credential assignments, and weak hashes (`a1d319f`).
+   - Batch Dependency Auditor (`src/dep_scanner.py`) implementing single-batch queries to OSV.dev with CVSS mapping and minimum fixed version recommendations.
+   - Aggregation Engine & Policy Gate (`src/aggregator.py`) implementing multi-scanner orchestration, composite key deduplication, severity hierarchy sorting, and CI exit code policy (`sys.exit(1)` on CRITICAL/HIGH).
+   - Total of 113 automated tests passing in 2.15s with 92.54% test coverage and 0 Ruff linting errors.
+2. **Execute Milestone 8 (Automated GitHub PR Review Commenter):**
+   - Implement `src/pr_commenter.py` generating idempotent GitHub PR comments with hidden HTML tag `<!-- security-audit-bot-v1 -->`.
+   - Build status badge, summary counters, and collapsible remediation blocks per `DESIGN.md`.
+   - Implement GitHub REST API client using standard `requests` and `GITHUB_TOKEN` (`GET` -> `PATCH` / `POST`).
+   - Support `--dry-run` console output and `--html-report` file export.

@@ -118,33 +118,39 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[!] Git Diff Error          : {exc}", file=sys.stderr)
             return 1
 
-        from src.ast_analyzer import scan_diff_for_ast_vulnerabilities
-        from src.secret_scanner import scan_diff_for_secrets
+        from src.aggregator import evaluate_policy, run_audit
+        from src.models import ScannerCategory
 
-        sec_start = time.perf_counter()
-        secret_findings = scan_diff_for_secrets(diff_files)
-        sec_duration_ms = (time.perf_counter() - sec_start) * 1000.0
-        sec_status = "[✓]" if not secret_findings else "[!]"
-        print(
-            f"{sec_status} Hybrid Secret Scanner   : {len(secret_findings)} leaks detected "
-            f"(Entropy > 4.5 bits/char) [{sec_duration_ms:.0f} ms]"
+        report = run_audit(
+            base_sha=args.base_sha,
+            head_sha=args.head_sha,
+            repo=args.repo,
+            pr_number=args.pr_number,
+            diff_files=diff_files,
         )
 
-        ast_start = time.perf_counter()
-        ast_findings = scan_diff_for_ast_vulnerabilities(diff_files)
-        ast_duration_ms = (time.perf_counter() - ast_start) * 1000.0
-        ast_status = "[✓]" if not ast_findings else "[!]"
+        secret_count = sum(1 for f in report.findings if f.category == ScannerCategory.SECRET)
+        ast_count = sum(1 for f in report.findings if f.category == ScannerCategory.AST_OWASP)
+        dep_count = sum(1 for f in report.findings if f.category == ScannerCategory.DEPENDENCY_CVE)
+
+        sec_status = "[✓]" if secret_count == 0 else "[!]"
+        ast_status = "[✓]" if ast_count == 0 else "[!]"
+        dep_status = "[✓]" if dep_count == 0 else "[!]"
+
         print(
-            f"{ast_status} AST Static Analyzer     : {len(ast_findings)} vulnerabilities flagged "
-            f"[{ast_duration_ms:.0f} ms]"
+            f"{sec_status} Hybrid Secret Scanner   : {secret_count} leaks detected "
+            f"(Entropy > 4.5 bits/char)"
+        )
+        print(f"{ast_status} AST Static Analyzer     : {ast_count} vulnerabilities flagged")
+        print(
+            f"{dep_status} Dependency Auditor      : {dep_count} CVEs found "
+            f"(OSV.dev batch) [{report.dep_scan_duration_ms:.0f} ms]"
         )
 
-        all_findings = secret_findings + ast_findings
-
-        if all_findings:
+        if report.findings:
             print("-" * 80)
-            print(f"🚨 FINDINGS ({len(all_findings)} issues detected):")
-            for f in all_findings:
+            print(f"🚨 FINDINGS ({len(report.findings)} issues detected):")
+            for f in report.findings:
                 print(f"\n  [{f.severity.value}] {f.rule_id}: {f.title}")
                 print(f"  Location : {f.file_path}:{f.line_number}")
                 if f.snippet:
@@ -152,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  Fix      : {f.remediation}")
 
         print("-" * 80)
-        return 0
+        return evaluate_policy(report)
 
     print("Notice: No base/head SHAs provided. Use --help to view usage instructions.")
     return 0

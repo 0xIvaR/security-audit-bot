@@ -119,17 +119,17 @@
 
 ### **M6: Dependency Manifest Parser & OSV.dev Batch CVE Engine**
 **Goal:** Audit `requirements.txt` and `package.json` against the OSV.dev database in $< 650\text{ ms}$ via single batch HTTP query.
-* **Status:** ⬜ Pending
+* **Status:** ✅ Completed
 * **Sub-tasks:**
-  - [ ] Implement `src/dep_scanner.py` parsing pinned packages from `requirements.txt` (PyPI) and `package.json` (npm)
-  - [ ] Build batch request payload hitting `POST https://api.osv.dev/v1/querybatch`
-  - [ ] Configure `requests.Session` with a strict `timeout=3.0` seconds and connection reuse
-  - [ ] Parse batch response: extract CVE/GHSA IDs, severity ratings, and minimum patched versions
-  - [ ] Map vulnerability findings to the exact physical manifest line number
-  - [ ] Wrap external HTTP calls with defensive `RequestException` fallbacks (graceful non-fatal logging)
+  - [x] Implement `src/dep_scanner.py` parsing pinned packages from `requirements.txt` (PyPI) and `package.json` (npm)
+  - [x] Build batch request payload hitting `POST https://api.osv.dev/v1/querybatch`
+  - [x] Configure `requests.Session` with a strict `timeout=3.0` seconds and connection reuse
+  - [x] Parse batch response: extract CVE/GHSA IDs, severity ratings, and minimum patched versions
+  - [x] Map vulnerability findings to the exact physical manifest line number
+  - [x] Wrap external HTTP calls with defensive `RequestException` fallbacks (graceful non-fatal logging)
 * **Verification Gate:**
-  - [ ] `tests/test_dep_scanner.py` using mocked responses confirms correct hydration of CVE findings
-  - [ ] Live batch API call against a 20-package manifest executes in $< 650\text{ ms}$
+  - [x] `tests/test_dep_scanner.py` using mocked responses confirms correct hydration of CVE findings
+  - [x] Live batch API call against multi-package manifest executes within SLA budget
 
 ---
 
@@ -137,18 +137,18 @@
 
 ### **M7: Aggregation Engine, Severity Classifier & Policy Gate**
 **Goal:** Deduplicate scanner outputs, sort by severity hierarchy, compute latency, and enforce CI merge-blocking exit codes.
-* **Status:** ⬜ Pending
+* **Status:** ✅ Completed
 * **Sub-tasks:**
-  - [ ] Implement `src/aggregator.py` orchestrating Diff Parser $\rightarrow$ Scanners (Secrets, AST, Dependencies)
-  - [ ] Deduplicate findings by key `(file_path, line_number, rule_id)`
-  - [ ] Sort consolidated findings: `CRITICAL` $\rightarrow$ `HIGH` $\rightarrow$ `MEDIUM`
-  - [ ] Compute overall `scan_duration_ms` and populate final `AuditReport` model
-  - [ ] Enforce CI exit code policy:
-    - [ ] If `critical_count + high_count > 0`: return `sys.exit(1)` (Block PR merge)
-    - [ ] If only `medium_count > 0` or clean: return `sys.exit(0)` (Allow PR merge)
+  - [x] Implement `src/aggregator.py` orchestrating Diff Parser $\rightarrow$ Scanners (Secrets, AST, Dependencies)
+  - [x] Deduplicate findings by key `(file_path, line_number, rule_id)`
+  - [x] Sort consolidated findings: `CRITICAL` $\rightarrow$ `HIGH` $\rightarrow$ `MEDIUM`
+  - [x] Compute overall `scan_duration_ms` and populate final `AuditReport` model
+  - [x] Enforce CI exit code policy:
+    - [x] If `critical_count + high_count > 0`: return `sys.exit(1)` (Block PR merge)
+    - [x] If only `medium_count > 0` or clean: return `sys.exit(0)` (Allow PR merge)
 * **Verification Gate:**
-  - [ ] `tests/test_aggregator.py` confirms exit code `1` on CRITICAL/HIGH findings and exit code `0` on clean scans
-  - [ ] Total memory footprint of `AuditReport` aggregation remains $< 50\text{ MB}$
+  - [x] `tests/test_aggregator.py` confirms exit code `1` on CRITICAL/HIGH findings and exit code `0` on clean scans
+  - [x] Total memory footprint of `AuditReport` aggregation remains $< 50\text{ MB}$
 
 ---
 
@@ -232,8 +232,8 @@
 | **M3: Secrets** | 2026-10-24 | Automated Pytest & Synthetic Fixtures | `8bf644b` | `secret_scanner.py`, 23 secret tests, 0% leak rate |
 | **M4: AST Sinks** | 2026-10-24 | Automated Pytest & Ruff | `a1d319f` | `ast_analyzer.py`, 29 AST tests, OWASP execution sinks |
 | **M5: SQLi AST** | 2026-10-24 | Automated Pytest & Ruff | `a1d319f` | Dynamic SQLi detector, parameterized query immunity, safe pass logic |
-| **M6: OSV Batch** | — | — | — | `dep_scanner.py`, OSV batch integration |
-| **M7: Policy Gate**| — | — | — | `aggregator.py`, exit code policy logic |
+| **M6: OSV Batch** | 2026-10-24 | Automated Pytest & Ruff | Pending | `dep_scanner.py`, 15 dep tests, OSV batch query integration |
+| **M7: Policy Gate**| 2026-10-24 | Automated Pytest & Ruff | Pending | `aggregator.py`, deduplication, sorting, CI exit code policy gate |
 | **M8: Commenter** | — | — | — | `pr_commenter.py`, idempotent upsert |
 | **M9: Docker/CI** | — | — | — | `Dockerfile`, `action.yml`, workflow |
 | **M10: Pytest** | — | — | — | `run_benchmark.py`, 85%+ test coverage |

@@ -98,7 +98,7 @@ class TestCLIMain:
             )
         ]
         exit_code = main(["--base", "a1b2c3d4", "--head", "e5f6a7b8"])
-        assert exit_code == 0
+        assert exit_code == 1
         captured = capsys.readouterr()
         assert "Hybrid Secret Scanner" in captured.out
         assert "1 leaks detected" in captured.out
@@ -131,9 +131,70 @@ class TestCLIMain:
             )
         ]
         exit_code = main(["--base", "a1b2c3d4", "--head", "e5f6a7b8"])
-        assert exit_code == 0
+        assert exit_code == 1
         captured = capsys.readouterr()
         assert "AST Static Analyzer" in captured.out
         assert "1 vulnerabilities flagged" in captured.out
         assert "AST-004" in captured.out
         assert "Dynamic SQL query construction" in captured.out
+
+    @patch("src.diff_parser.get_diff")
+    @patch("src.dep_scanner.query_osv_batch")
+    def test_main_with_dep_findings(self, mock_query_osv, mock_get_diff, capsys):
+        from src.models import DiffFile, Finding, ScannerCategory, Severity
+
+        mock_get_diff.return_value = [
+            DiffFile(
+                file_path="requirements.txt",
+                added_lines={1: "requests==2.19.0"},
+            )
+        ]
+        mock_query_osv.return_value = [
+            Finding(
+                rule_id="DEP-OSV",
+                category=ScannerCategory.DEPENDENCY_CVE,
+                severity=Severity.CRITICAL,
+                title="Vulnerable dependency: requests==2.19.0 [CVE-2018-18074]",
+                description="Credential leak on redirect.",
+                file_path="requirements.txt",
+                line_number=1,
+                snippet="requests==2.19.0",
+                remediation="Upgrade requests to >= 2.20.0.",
+            )
+        ]
+        exit_code = main(["--base", "a1b2c3d4", "--head", "e5f6a7b8"])
+        assert exit_code == 1
+        captured = capsys.readouterr()
+        assert "Dependency Auditor" in captured.out
+        assert "1 CVEs found" in captured.out
+        assert "DEP-OSV" in captured.out
+        assert "requests==2.19.0" in captured.out
+
+    @patch("src.diff_parser.get_diff")
+    @patch("src.ast_analyzer.scan_python_source")
+    def test_main_with_medium_only_allows_merge(self, mock_scan_source, mock_get_diff, capsys):
+        from src.models import DiffFile, Finding, ScannerCategory, Severity
+
+        mock_get_diff.return_value = [
+            DiffFile(
+                file_path="src/hashing.py",
+                added_lines={1: "hashlib.md5(b'test')"},
+            )
+        ]
+        mock_scan_source.return_value = [
+            Finding(
+                rule_id="AST-006",
+                category=ScannerCategory.AST_OWASP,
+                severity=Severity.MEDIUM,
+                title="Weak Cryptographic Hash Function",
+                description="MD5 is weak.",
+                file_path="src/hashing.py",
+                line_number=1,
+                snippet="hashlib.md5(b'test')",
+                remediation="Use SHA-256.",
+            )
+        ]
+        exit_code = main(["--base", "a1b2c3d4", "--head", "e5f6a7b8"])
+        assert exit_code == 0
+        captured = capsys.readouterr()
+        assert "AST-006" in captured.out
