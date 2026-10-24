@@ -118,6 +118,27 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[!] Git Diff Error          : {exc}", file=sys.stderr)
             return 1
 
+        from src.secret_scanner import scan_diff_for_secrets
+
+        sec_start = time.perf_counter()
+        secret_findings = scan_diff_for_secrets(diff_files)
+        sec_duration_ms = (time.perf_counter() - sec_start) * 1000.0
+        sec_status = "[✓]" if not secret_findings else "[!]"
+        print(
+            f"{sec_status} Hybrid Secret Scanner   : {len(secret_findings)} leaks detected "
+            f"(Entropy > 4.5 bits/char) [{sec_duration_ms:.0f} ms]"
+        )
+
+        if secret_findings:
+            print("-" * 80)
+            print(f"🚨 FINDINGS ({len(secret_findings)} issues detected):")
+            for f in secret_findings:
+                print(f"\n  [{f.severity.value}] {f.rule_id}: {f.title}")
+                print(f"  Location : {f.file_path}:{f.line_number}")
+                if f.snippet:
+                    print(f"  Snippet  : {f.snippet.strip()}")
+                print(f"  Fix      : {f.remediation}")
+
         print("-" * 80)
         return 0
 

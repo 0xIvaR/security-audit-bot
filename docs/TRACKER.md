@@ -60,22 +60,22 @@
 
 ### **M3: Hybrid Secret Scanner (Compiled Regex + Shannon Entropy)**
 **Goal:** Intercept hardcoded cloud keys and unstructured API tokens with 0% leak rate and $< 350\text{ ms}$ latency.
-* **Status:** ⬜ Pending
+* **Status:** ✅ Completed
 * **Sub-tasks:**
-  - [ ] Implement compiled regex rules in `src/secret_scanner.py`:
-    - [ ] `SEC-001`: AWS Access Key ID (`AKIA[0-9A-Z]{16}`) — `CRITICAL`
-    - [ ] `SEC-002`: AWS Secret Access Key assignment — `CRITICAL`
-    - [ ] `SEC-003`: GitHub PAT (`ghp_[A-Za-z0-9]{36}`, `github_pat_[A-Za-z0-9_]{82}`) — `CRITICAL`
-    - [ ] `SEC-004`: Private Cryptographic Keys (`BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY`) — `CRITICAL`
-    - [ ] `SEC-005`: JSON Web Tokens (`eyJ[A-Za-z0-9_-]{10,}\...`) — `HIGH`
-    - [ ] `SEC-006`: Slack Webhook / Bot Tokens (`xox[baprs]-[0-9a-zA-Z]{10,48}`) — `HIGH`
-  - [ ] Implement Shannon entropy calculator: $H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$
-  - [ ] Enforce entropy gate: candidate strings $\ge 20$ chars with $H(X) > 4.5\text{ bits/char}$ emit `SEC-007` (`HIGH`)
-  - [ ] Implement suppression allowlist: ignore UUIDs, hex hashes, URL/file paths, and dummy strings (`EXAMPLE`, `TEST`)
-  - [ ] Implement `redact_secret()` helper masking raw secrets (`AKIA************7X9Q`)
+  - [x] Implement compiled regex rules in `src/secret_scanner.py`:
+    - [x] `SEC-001`: AWS Access Key ID (`AKIA[0-9A-Z]{16}`) — `CRITICAL`
+    - [x] `SEC-002`: AWS Secret Access Key assignment — `CRITICAL`
+    - [x] `SEC-003`: GitHub PAT (`ghp_[A-Za-z0-9]{36}`, `github_pat_[A-Za-z0-9_]{82}`) — `CRITICAL`
+    - [x] `SEC-004`: Private Cryptographic Keys (`BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY`) — `CRITICAL`
+    - [x] `SEC-005`: JSON Web Tokens (`eyJ[A-Za-z0-9_-]{10,}\...`) — `HIGH`
+    - [x] `SEC-006`: Slack Webhook / Bot Tokens (`xox[baprs]-[0-9a-zA-Z]{10,48}`) — `HIGH`
+  - [x] Implement Shannon entropy calculator: $H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$
+  - [x] Enforce entropy gate: candidate strings $\ge 20$ chars with $H(X) > 4.5\text{ bits/char}$ emit `SEC-007` (`HIGH`)
+  - [x] Implement suppression allowlist: ignore UUIDs, hex hashes, URL/file paths, regex syntax, and dummy strings (`EXAMPLE`, `TEST`)
+  - [x] Implement `redact_secret()` helper masking raw secrets (`AKIA************7X9Q`)
 * **Verification Gate:**
-  - [ ] `tests/test_secret_scanner.py` validates 100% detection on synthetic AWS, GitHub, and high-entropy secret fixtures
-  - [ ] Confirmed zero unmasked secrets leaked in emitted `Finding.snippet` objects
+  - [x] `tests/test_secret_scanner.py` validates 100% detection on synthetic AWS, GitHub, and high-entropy secret fixtures
+  - [x] Confirmed zero unmasked secrets leaked in emitted `Finding.snippet` objects
 
 ---
 
@@ -229,7 +229,7 @@
 | :--- | :---: | :---: | :---: | :--- |
 | **M1: Baseline** | 2026-10-24 | Automated Pytest & Ruff | `d3becf4` | `pyproject.toml`, `models.py`, `main.py`, test suite (98% cov) |
 | **M2: Git Diff** | 2026-10-24 | Automated Pytest & Diff Benchmark | `295f869` | `diff_parser.py`, 16 unit tests, live git diff integration |
-| **M3: Secrets** | — | — | — | `secret_scanner.py`, entropy calculator |
+| **M3: Secrets** | 2026-10-24 | Automated Pytest & Synthetic Fixtures | `8bf644b` | `secret_scanner.py`, 23 secret tests, 0% leak rate |
 | **M4: AST Sinks** | — | — | — | `ast_analyzer.py`, sink visitor |
 | **M5: SQLi AST** | — | — | — | SQL injection visitor, benchmark script |
 | **M6: OSV Batch** | — | — | — | `dep_scanner.py`, OSV batch integration |

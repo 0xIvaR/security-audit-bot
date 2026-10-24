@@ -62,7 +62,7 @@ SECRET_REGEX_RULES: dict[str, dict[str, Any]] = {
         "title": "Private Cryptographic Key Header",
         "severity": Severity.CRITICAL,
         "category": ScannerCategory.SECRET,
-        "pattern": re.compile(r"-----BEGIN (?:RSA|DSA|EC|OPENSSH|PRIVATE) KEY-----"),
+        "pattern": re.compile(r"-----BEGIN (?:[A-Z0-9_-]+\s+)?(?:PRIVATE\s+)?KEY-----"),
         "description": "Plaintext private cryptographic key header detected.",
         "remediation": "Remove private keys from source code; store keys securely in a vault or secrets manager.",
     },

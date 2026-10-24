@@ -86,3 +86,22 @@ class TestCLIMain:
         assert exit_code == 1
         captured = capsys.readouterr()
         assert "Git Diff Error" in captured.err
+
+    @patch("src.diff_parser.get_diff")
+    def test_main_with_secret_findings(self, mock_get_diff, capsys):
+        from src.models import DiffFile
+
+        mock_get_diff.return_value = [
+            DiffFile(
+                file_path="src/config.py",
+                added_lines={1: "AWS_KEY = 'AKIA1234567890ABCDEF'"},
+            )
+        ]
+        exit_code = main(["--base", "a1b2c3d4", "--head", "e5f6a7b8"])
+        assert exit_code == 0
+        captured = capsys.readouterr()
+        assert "Hybrid Secret Scanner" in captured.out
+        assert "1 leaks detected" in captured.out
+        assert "🚨 FINDINGS (1 issues detected):" in captured.out
+        assert "SEC-001" in captured.out
+        assert "AKIA************CDEF" in captured.out
