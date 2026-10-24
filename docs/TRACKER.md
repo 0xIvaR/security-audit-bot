@@ -236,5 +236,5 @@
 | **M7: Policy Gate**| 2026-10-24 | Automated Pytest & Ruff | `85065af` | `aggregator.py`, deduplication, sorting, CI exit code policy gate |
 | **M8: Commenter** | 2026-10-24 | Automated Pytest & Ruff | `1da799f` | `pr_commenter.py`, idempotent upsert, HTML report |
 | **M9: Docker/CI** | 2026-10-24 | Automated Pytest & Docker | `1da799f` | `Dockerfile` (90MB), `action.yml`, `.github/workflows/security-audit.yml` |
-| **M10: Pytest** | — | — | — | `run_benchmark.py`, 85%+ test coverage |
+| **M10: Pytest** | 2026-10-24 | Automated Pytest & Benchmark | `76f9505` | `corpus.py` (580 cases), `run_benchmark.py`, 94.19% cov |
 | **M11: Deploy** | — | — | — | 3 active repos, portfolio `README.md` |
