@@ -234,7 +234,7 @@
 | **M5: SQLi AST** | 2026-10-24 | Automated Pytest & Ruff | `a1d319f` | Dynamic SQLi detector, parameterized query immunity, safe pass logic |
 | **M6: OSV Batch** | 2026-10-24 | Automated Pytest & Ruff | `85065af` | `dep_scanner.py`, 15 dep tests, OSV batch query integration |
 | **M7: Policy Gate**| 2026-10-24 | Automated Pytest & Ruff | `85065af` | `aggregator.py`, deduplication, sorting, CI exit code policy gate |
-| **M8: Commenter** | 2026-10-24 | Automated Pytest & Ruff | Pending | `pr_commenter.py`, idempotent upsert, HTML report |
-| **M9: Docker/CI** | 2026-10-24 | Automated Pytest & Docker | Pending | `Dockerfile` (90MB), `action.yml`, `.github/workflows/security-audit.yml` |
+| **M8: Commenter** | 2026-10-24 | Automated Pytest & Ruff | `1da799f` | `pr_commenter.py`, idempotent upsert, HTML report |
+| **M9: Docker/CI** | 2026-10-24 | Automated Pytest & Docker | `1da799f` | `Dockerfile` (90MB), `action.yml`, `.github/workflows/security-audit.yml` |
 | **M10: Pytest** | — | — | — | `run_benchmark.py`, 85%+ test coverage |
 | **M11: Deploy** | — | — | — | 3 active repos, portfolio `README.md` |
