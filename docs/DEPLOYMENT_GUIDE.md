@@ -52,10 +52,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: "Run Security Audit Container"
-        uses: docker://ghcr.io/sohamkundu/security-audit-bot:latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Run Security Audit Bot"
+        uses: 0xIvaR/security-audit-bot@master
         with:
           base: ${{ github.event.pull_request.base.sha }}
           head: ${{ github.event.pull_request.head.sha }}

@@ -145,7 +145,7 @@ python -m benchmarks.run_benchmark
 ### Installation
 ```bash
 # Clone repository
-git clone https://github.com/sohamkundu/security-audit-bot.git
+git clone https://github.com/0xIvaR/security-audit-bot.git
 cd security-audit-bot
 
 # Create and activate virtual environment
@@ -222,9 +222,7 @@ jobs:
           fetch-depth: 0
 
       - name: "Run Security Audit Bot"
-        uses: docker://ghcr.io/sohamkundu/security-audit-bot:latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: 0xIvaR/security-audit-bot@master
         with:
           base: ${{ github.event.pull_request.base.sha }}
           head: ${{ github.event.pull_request.head.sha }}
@@ -288,5 +286,5 @@ jobs:
 
 ## ⚖️ License & Author
 
-- **Developer:** [Soham Kundu](https://github.com/sohamkundu) (B.Tech Computer Science & Engineering, IEM Kolkata)
+- **Developer:** [Soham Kundu (0xIvaR)](https://github.com/0xIvaR) (B.Tech Computer Science & Engineering, IEM Kolkata)
 - **License:** Licensed under the [MIT License](LICENSE).
