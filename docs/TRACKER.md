@@ -27,17 +27,17 @@
 
 ### **M1: Environment, Project Structure & CLI Baseline**
 **Goal:** Establish a clean Python 3.11+ development environment with strict typing, linting, and CLI execution harness.
-* **Status:** ⬜ Pending
+* **Status:** ✅ Completed
 * **Sub-tasks:**
-  - [ ] Initialize Git repository with `.gitignore` and `.env.example` (`GITHUB_TOKEN`, `GITHUB_REPOSITORY`, `PR_NUMBER`)
-  - [ ] Configure `pyproject.toml` and lock production dependencies: `pydantic>=2.6.0,<3.0.0`, `requests>=2.31.0,<3.0.0`
-  - [ ] Configure dev dependencies: `pytest>=8.0.0`, `pytest-cov>=4.1.0`, `ruff>=0.3.0`
-  - [ ] Establish directory scaffold: `src/`, `tests/`, `benchmarks/`, `trackers/`
-  - [ ] Implement `src/models.py` with Pydantic v2 data models (`Severity`, `ScannerCategory`, `DiffFile`, `Finding`, `AuditReport`)
-  - [ ] Implement `src/main.py` CLI parser supporting `--base`, `--head`, `--repo`, `--pr-number`, `--dry-run`, and `--html-report`
+  - [x] Initialize Git repository with `.gitignore` and `.env.example` (`GITHUB_TOKEN`, `GITHUB_REPOSITORY`, `PR_NUMBER`)
+  - [x] Configure `pyproject.toml` and lock production dependencies: `pydantic>=2.6.0,<3.0.0`, `requests>=2.31.0,<3.0.0`
+  - [x] Configure dev dependencies: `pytest>=8.0.0`, `pytest-cov>=5.0.0`, `ruff>=0.3.0`
+  - [x] Establish directory scaffold: `src/`, `tests/`, `benchmarks/`, `trackers/`
+  - [x] Implement `src/models.py` with Pydantic v2 data models (`Severity`, `ScannerCategory`, `DiffFile`, `Finding`, `AuditReport`)
+  - [x] Implement `src/main.py` CLI parser supporting `--base`, `--head`, `--repo`, `--pr-number`, `--dry-run`, and `--html-report`
 * **Verification Gate:**
-  - [ ] `ruff check .` and `ruff format --check .` pass with zero errors
-  - [ ] `python -m src.main --help` returns exit code `0` with structured argument descriptions
+  - [x] `ruff check .` and `ruff format --check .` pass with zero errors
+  - [x] `python -m src.main --help` returns exit code `0` with structured argument descriptions
 
 ---
 
@@ -227,7 +227,7 @@
 
 | Milestone ID | Date Completed | Verified By | Git Commit SHA | Key Artifact / Deliverable |
 | :--- | :---: | :---: | :---: | :--- |
-| **M1: Baseline** | — | — | — | `pyproject.toml`, `models.py`, `main.py` |
+| **M1: Baseline** | 2026-10-24 | Automated Pytest & Ruff | `d3becf4` | `pyproject.toml`, `models.py`, `main.py`, test suite (98% cov) |
 | **M2: Git Diff** | — | — | — | `diff_parser.py`, unit test suite |
 | **M3: Secrets** | — | — | — | `secret_scanner.py`, entropy calculator |
 | **M4: AST Sinks** | — | — | — | `ast_analyzer.py`, sink visitor |

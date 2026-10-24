@@ -42,9 +42,9 @@ When generating code or resuming work with any AI model, enforce the following c
 
 | Milestone | Scope / Deliverable | Status | Verification Checkpoint |
 | :--- | :--- | :---: | :--- |
-| **Spec Suite** | `PRD.md`, `ARCHITECTURE.md`, `DESIGN.md`, `MEMORY.md`, `RULES.md`, `TRACKER.md` | 🟡 In Progress | Architectural specifications drafted |
-| **M1: Baseline** | Project setup, `pyproject.toml`, Pydantic models (`src/models.py`), CLI args | ⬜ Pending | `python -m src.main --help` returns 0 |
-| **M2: Git Diff** | `src/diff_parser.py` parsing `git diff --unified=0` into `DiffFile` models | ⬜ Pending | Added lines mapped to 1-based line numbers |
+| **Spec Suite** | `PRD.md`, `ARCHITECTURE.md`, `DESIGN.md`, `MEMORY.md`, `RULES.md`, `TRACKER.md` | ✅ Completed | Complete architecture & spec suite |
+| **M1: Baseline** | Project setup, `pyproject.toml`, Pydantic models (`src/models.py`), CLI args | ✅ Completed | `python -m src.main --help` passes; 98% coverage |
+| **M2: Git Diff** | `src/diff_parser.py` parsing `git diff --unified=0` into `DiffFile` models | 🟡 Next Up | Added lines mapped to 1-based line numbers |
 | **M3: Secrets** | `src/secret_scanner.py` (Compiled regex + Shannon entropy $> 4.5$) | ⬜ Pending | 0% leaks on synthetic AWS/JWT test fixtures |
 | **M4: AST Sinks** | `src/ast_analyzer.py` (`ast.NodeVisitor` for `eval`, `exec`, `shell=True`, etc.) | ⬜ Pending | Catches code sinks; ignores comments/docstrings |
 | **M5: SQLi AST** | AST detection of dynamic SQL (`JoinedStr`, `BinOp`, `Mod`, `.format()`) | ⬜ Pending | Parameterized tuples pass; f-strings flagged |
@@ -82,11 +82,13 @@ When generating code or resuming work with any AI model, enforce the following c
 ---
 
 ## 6. Immediate Next Steps & Checkpoints
-
-When resuming development:
-1. **Finalize Specification Suite:** Complete `RULES.md` (File 5) and `TRACKER.md` (File 6).
-2. **Execute Milestone 1:**
-   - Initialize Python project root.
-   - Configure `pyproject.toml` and dependencies (`pydantic`, `requests`, `pytest`, `ruff`).
-   - Implement `src/models.py` with Pydantic v2 data models.
-   - Set up CLI argument parsing in `src/main.py`.
+1. **Milestone 1 Completed:**
+   - Git repository initialized with `.gitignore` and `.env.example`.
+   - Python virtual environment `.venv` configured and all pinned dependencies installed.
+   - Pydantic v2 domain schemas (`src/models.py`), security config (`src/config.py`), and CLI harness (`src/main.py`) implemented.
+   - 100% linter and format compliance (`ruff`) and 98% test coverage (`pytest-cov`).
+2. **Execute Milestone 2 (Git Diff Parser):**
+   - Implement `src/diff_parser.py` wrapping `git diff --unified=0 <base>...<head>`.
+   - Map unified diff hunk headers to 1-based line numbers.
+   - Implement file exclusion filters (lockfiles, binaries, virtualenvs).
+   - Write comprehensive unit tests in `tests/test_diff_parser.py`.
