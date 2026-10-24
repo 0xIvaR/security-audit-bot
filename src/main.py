@@ -96,11 +96,28 @@ def main(argv: list[str] | None = None) -> int:
 
     # Informational output for Milestone 1 baseline execution
     if args.base_sha and args.head_sha:
+        import time
+
+        from src.diff_parser import get_diff
+
         print(f"Target Repository : {args.repo or 'Local / Unspecified'}")
         print(f"Diff Comparison   : base ({args.base_sha[:7]}) ... head ({args.head_sha[:7]})")
         print("Scan Mode         : Pull Request Scoped (Modified '+' Lines Only)")
         print("-" * 80)
-        print("[✓] Milestone 1 Baseline Initialized: CLI and models operational.")
+
+        start_time = time.perf_counter()
+        try:
+            diff_files = get_diff(args.base_sha, args.head_sha)
+            diff_duration_ms = (time.perf_counter() - start_time) * 1000.0
+            total_added_lines = sum(len(df.added_lines) for df in diff_files)
+            print(
+                f"[✓] Git Diff Parsed         : {len(diff_files)} files modified "
+                f"({total_added_lines} added lines) [{diff_duration_ms:.0f} ms]"
+            )
+        except RuntimeError as exc:
+            print(f"[!] Git Diff Error          : {exc}", file=sys.stderr)
+            return 1
+
         print("-" * 80)
         return 0
 

@@ -43,16 +43,16 @@
 
 ### **M2: Git Diff Parser & Changed-Line Mapper**
 **Goal:** Parse unified git diffs to map newly added lines (`+`) to exact physical line numbers for sub-second scanning.
-* **Status:** ⬜ Pending
+* **Status:** ✅ Completed
 * **Sub-tasks:**
-  - [ ] Implement `src/diff_parser.py` wrapping `git diff --unified=0 <base>...<head>` via `subprocess.run`
-  - [ ] Parse unified diff hunk headers (`@@ -old_start,old_count +new_start,new_count @@`) to calculate 1-based head line numbers
-  - [ ] Build exclusion filters ignoring binary assets, lockfiles (`package-lock.json`, `poetry.lock`), `.venv/`, and `node_modules/`
-  - [ ] Populate `DiffFile` models mapping `{ "file_path": {set_of_added_line_numbers} }`
-  - [ ] Add offline diff parsing fallback accepting raw diff strings or patches for testing
+  - [x] Implement `src/diff_parser.py` wrapping `git diff --unified=0 <base>...<head>` via `subprocess.run`
+  - [x] Parse unified diff hunk headers (`@@ -old_start,old_count +new_start,new_count @@`) to calculate 1-based head line numbers
+  - [x] Build exclusion filters ignoring binary assets, lockfiles (`package-lock.json`, `poetry.lock`), `.venv/`, and `node_modules/`
+  - [x] Populate `DiffFile` models mapping `{ "file_path": {set_of_added_line_numbers} }`
+  - [x] Add offline diff parsing fallback accepting raw diff strings or patches for testing
 * **Verification Gate:**
-  - [ ] Unit tests in `tests/test_diff_parser.py` verify exact line mapping on single-line, multi-line, and multi-hunk diffs
-  - [ ] Diff parsing benchmark completes in $< 250\text{ ms}$ for changes spanning up to 20 files
+  - [x] Unit tests in `tests/test_diff_parser.py` verify exact line mapping on single-line, multi-line, and multi-hunk diffs
+  - [x] Diff parsing benchmark completes in $< 250\text{ ms}$ for changes spanning up to 20 files (measured at ~4 ms in tests, 65 ms live)
 
 ---
 
@@ -228,7 +228,7 @@
 | Milestone ID | Date Completed | Verified By | Git Commit SHA | Key Artifact / Deliverable |
 | :--- | :---: | :---: | :---: | :--- |
 | **M1: Baseline** | 2026-10-24 | Automated Pytest & Ruff | `d3becf4` | `pyproject.toml`, `models.py`, `main.py`, test suite (98% cov) |
-| **M2: Git Diff** | — | — | — | `diff_parser.py`, unit test suite |
+| **M2: Git Diff** | 2026-10-24 | Automated Pytest & Diff Benchmark | `295f869` | `diff_parser.py`, 16 unit tests, live git diff integration |
 | **M3: Secrets** | — | — | — | `secret_scanner.py`, entropy calculator |
 | **M4: AST Sinks** | — | — | — | `ast_analyzer.py`, sink visitor |
 | **M5: SQLi AST** | — | — | — | SQL injection visitor, benchmark script |
