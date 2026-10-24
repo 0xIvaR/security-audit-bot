@@ -232,8 +232,8 @@
 | **M3: Secrets** | 2026-10-24 | Automated Pytest & Synthetic Fixtures | `8bf644b` | `secret_scanner.py`, 23 secret tests, 0% leak rate |
 | **M4: AST Sinks** | 2026-10-24 | Automated Pytest & Ruff | `a1d319f` | `ast_analyzer.py`, 29 AST tests, OWASP execution sinks |
 | **M5: SQLi AST** | 2026-10-24 | Automated Pytest & Ruff | `a1d319f` | Dynamic SQLi detector, parameterized query immunity, safe pass logic |
-| **M6: OSV Batch** | 2026-10-24 | Automated Pytest & Ruff | Pending | `dep_scanner.py`, 15 dep tests, OSV batch query integration |
-| **M7: Policy Gate**| 2026-10-24 | Automated Pytest & Ruff | Pending | `aggregator.py`, deduplication, sorting, CI exit code policy gate |
+| **M6: OSV Batch** | 2026-10-24 | Automated Pytest & Ruff | `85065af` | `dep_scanner.py`, 15 dep tests, OSV batch query integration |
+| **M7: Policy Gate**| 2026-10-24 | Automated Pytest & Ruff | `85065af` | `aggregator.py`, deduplication, sorting, CI exit code policy gate |
 | **M8: Commenter** | — | — | — | `pr_commenter.py`, idempotent upsert |
 | **M9: Docker/CI** | — | — | — | `Dockerfile`, `action.yml`, workflow |
 | **M10: Pytest** | — | — | — | `run_benchmark.py`, 85%+ test coverage |
