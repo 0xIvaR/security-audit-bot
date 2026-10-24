@@ -69,6 +69,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional destination path to export a standalone dark-mode HTML report.",
     )
     parser.add_argument(
+        "--md-report",
+        dest="md_report",
+        type=str,
+        default=None,
+        help="Optional destination path to export a standalone Markdown report file.",
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version="%(prog)s 1.0.0",
@@ -168,6 +175,18 @@ def main(argv: list[str] | None = None) -> int:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(html_content, encoding="utf-8")
             print(f"[✓] HTML Report Exported    : {output_path.resolve()}")
+
+        # Export Markdown report if requested
+        if args.md_report:
+            from pathlib import Path
+
+            from src.pr_commenter import build_markdown_report
+
+            md_content = build_markdown_report(report)
+            output_path = Path(args.md_report)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(md_content, encoding="utf-8")
+            print(f"[✓] Markdown Report Exported: {output_path.resolve()}")
 
         # Post or update PR comment if running in CI mode (repo & pr-number provided, not dry-run)
         if args.repo and args.pr_number and not args.dry_run:
