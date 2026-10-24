@@ -238,4 +238,4 @@
 | **M8: Commenter** | 2026-10-24 | Automated Pytest & Ruff | `1da799f` | `pr_commenter.py`, idempotent upsert, HTML report |
 | **M9: Docker/CI** | 2026-10-24 | Automated Pytest & Docker | `1da799f` | `Dockerfile` (90MB), `action.yml`, `.github/workflows/security-audit.yml` |
 | **M10: Pytest** | 2026-10-24 | Automated Pytest & Benchmark | `76f9505` | `corpus.py` (580 cases), `run_benchmark.py`, 94.19% cov |
-| **M11: Deploy** | 2026-10-24 | Automated Pytest & Simulation | Pending | `README.md`, `DEPLOYMENT_GUIDE.md`, `simulate_audit.py` |
+| **M11: Deploy** | 2026-10-24 | Automated Pytest & Simulation | `f7a1d28` | `README.md`, `DEPLOYMENT_GUIDE.md`, `simulate_audit.py` |
