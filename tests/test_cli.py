@@ -198,3 +198,61 @@ class TestCLIMain:
         assert exit_code == 0
         captured = capsys.readouterr()
         assert "AST-006" in captured.out
+
+    @patch("src.diff_parser.get_diff")
+    def test_main_with_html_report_export(self, mock_get_diff, tmp_path, capsys):
+        from src.models import DiffFile
+
+        mock_get_diff.return_value = [
+            DiffFile(file_path="src/app.py", added_lines={1: "print('hello')"})
+        ]
+        html_file = tmp_path / "reports" / "audit.html"
+
+        exit_code = main(
+            [
+                "--base",
+                "a1b2c3d4",
+                "--head",
+                "e5f6a7b8",
+                "--html-report",
+                str(html_file),
+                "--dry-run",
+            ]
+        )
+
+        assert exit_code == 0
+        assert html_file.exists()
+        content = html_file.read_text(encoding="utf-8")
+        assert "<!DOCTYPE html>" in content
+        assert "Security Audit Report" in content
+        captured = capsys.readouterr()
+        assert "HTML Report Exported" in captured.out
+
+    @patch("src.diff_parser.get_diff")
+    @patch("src.pr_commenter.post_or_update_pr_comment")
+    def test_main_invokes_pr_commenter_in_ci_mode(self, mock_post_comment, mock_get_diff, capsys):
+        from src.models import DiffFile
+
+        mock_get_diff.return_value = [
+            DiffFile(file_path="src/app.py", added_lines={1: "print('hello')"})
+        ]
+        mock_post_comment.return_value = True
+
+        exit_code = main(
+            [
+                "--base",
+                "a1b2c3d4",
+                "--head",
+                "e5f6a7b8",
+                "--repo",
+                "octocat/Hello-World",
+                "--pr-number",
+                "101",
+            ]
+        )
+
+        assert exit_code == 0
+        mock_post_comment.assert_called_once()
+        call_kwargs = mock_post_comment.call_args[1]
+        assert call_kwargs["repo"] == "octocat/Hello-World"
+        assert call_kwargs["pr_number"] == 101

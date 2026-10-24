@@ -157,6 +157,28 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"  Snippet  : {f.snippet.strip()}")
                 print(f"  Fix      : {f.remediation}")
 
+        # Export HTML report if requested
+        if args.html_report:
+            from pathlib import Path
+
+            from src.pr_commenter import build_html_report
+
+            html_content = build_html_report(report)
+            output_path = Path(args.html_report)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(html_content, encoding="utf-8")
+            print(f"[✓] HTML Report Exported    : {output_path.resolve()}")
+
+        # Post or update PR comment if running in CI mode (repo & pr-number provided, not dry-run)
+        if args.repo and args.pr_number and not args.dry_run:
+            from src.pr_commenter import post_or_update_pr_comment
+
+            post_or_update_pr_comment(
+                report=report,
+                repo=args.repo,
+                pr_number=args.pr_number,
+            )
+
         print("-" * 80)
         return evaluate_policy(report)
 

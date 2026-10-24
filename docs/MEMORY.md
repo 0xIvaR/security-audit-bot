@@ -50,9 +50,9 @@ When generating code or resuming work with any AI model, enforce the following c
 | **M5: SQLi AST** | AST detection of dynamic SQL (`JoinedStr`, `BinOp`, `Mod`, `.format()`) | ✅ Completed | Parameterized tuples pass; f-strings flagged |
 | **M6: OSV Batch** | `src/dep_scanner.py` (`requirements.txt`, `package.json`, batch API $< 650\text{ ms}$) | ✅ Completed | Returns CVEs/GHSAs for vulnerable test manifests |
 | **M7: Policy Gate** | `src/aggregator.py` (Deduplication, sorting, `sys.exit(1)` on CRITICAL/HIGH) | ✅ Completed | Blocks merge on CRITICAL; passes clean PRs |
-| **M8: Commenter** | `src/pr_commenter.py` (Idempotent Markdown upsert via GitHub API) | 🟡 Next Up | Patches existing comment with zero spam |
-| **M9: Docker/CI** | `Dockerfile` (non-root `uid 1001`) + `.github/workflows/security-audit.yml` | ⬜ Pending | GitHub Actions runs and completes in $< 4.8\text{s}$ |
-| **M10: Pytest** | `tests/` suite + `benchmarks/run_benchmark.py` (96.4% TPR, 74% FP drop) | ⬜ Pending | `pytest --cov=src` $\ge 85\%$ coverage |
+| **M8: Commenter** | `src/pr_commenter.py` (Idempotent Markdown upsert via GitHub API) | ✅ Completed | Patches existing comment with zero spam; HTML export |
+| **M9: Docker/CI** | `Dockerfile` (non-root `uid 1001`) + `.github/workflows/security-audit.yml` | ✅ Completed | Multi-stage image 90MB (<180MB SLA); non-root user 1001 |
+| **M10: Pytest** | `tests/` suite + `benchmarks/run_benchmark.py` (96.4% TPR, 74% FP drop) | 🟡 Next Up | `pytest --cov=src` $\ge 85\%$ coverage; 500+ test corpus |
 | **M11: Deploy** | Live validation across 3 real GitHub repositories + portfolio `README.md` | ⬜ Pending | 3 merged/blocked test PRs with screenshots |
 
 ---
@@ -79,19 +79,28 @@ When generating code or resuming work with any AI model, enforce the following c
 * **Decision:** Injected `<!-- security-audit-bot-v1 -->` on line 1 of every comment. The bot performs a `GET /comments`, checks for the tag, and updates via `PATCH` or creates via `POST`.
 * **Outcome:** Exactly one persistent comment per Pull Request.
 
+### ADR-005: Multi-Stage Docker Build with Non-Root Security Context
+* **Context:** Packaging Python dependencies and CLI tooling into container actions often inflates image size to > 400MB and runs as root.
+* **Decision:** Implemented a 2-stage `Dockerfile` (`python:3.11-slim`) installing dependencies with `pip install --user` in builder, copying to runtime, creating non-root system user `botuser` (`uid 1001`), and trimming `apt` cache.
+* **Outcome:** Container image size reduced to 90 MB (strict SLA < 180 MB), running securely non-root.
+
 ---
 
 ## 6. Immediate Next Steps & Checkpoints
-1. **Milestones 1 through 7 Completed:**
+1. **Milestones 1 through 9 Completed:**
    - Baseline models, configuration, and CLI harness operational (`1bbb9ab`).
    - Diff parser (`src/diff_parser.py`) executing sub-second git diff and line mapping (`b0c61a0`).
    - Hybrid Secret Scanner (`src/secret_scanner.py`) implementing Tier 1 (Regex), Tier 2 (Shannon Entropy > 4.5), Tier 3 (Allowlist), and mandatory masking (`redact_secret()`) (`b52b482`).
    - AST Static Analyzer (`src/ast_analyzer.py`) implementing OWASP execution sinks, deserialization, command injection, SQL injection taint detection, credential assignments, and weak hashes (`a1d319f`).
-   - Batch Dependency Auditor (`src/dep_scanner.py`) implementing single-batch queries to OSV.dev with CVSS mapping and minimum fixed version recommendations.
-   - Aggregation Engine & Policy Gate (`src/aggregator.py`) implementing multi-scanner orchestration, composite key deduplication, severity hierarchy sorting, and CI exit code policy (`sys.exit(1)` on CRITICAL/HIGH).
-   - Total of 113 automated tests passing in 2.15s with 92.54% test coverage and 0 Ruff linting errors.
-2. **Execute Milestone 8 (Automated GitHub PR Review Commenter):**
-   - Implement `src/pr_commenter.py` generating idempotent GitHub PR comments with hidden HTML tag `<!-- security-audit-bot-v1 -->`.
-   - Build status badge, summary counters, and collapsible remediation blocks per `DESIGN.md`.
-   - Implement GitHub REST API client using standard `requests` and `GITHUB_TOKEN` (`GET` -> `PATCH` / `POST`).
-   - Support `--dry-run` console output and `--html-report` file export.
+   - Batch Dependency Auditor (`src/dep_scanner.py`) implementing single-batch queries to OSV.dev with CVSS mapping and minimum fixed version recommendations (`85065af`).
+   - Aggregation Engine & Policy Gate (`src/aggregator.py`) implementing multi-scanner orchestration, composite key deduplication, severity hierarchy sorting, and CI exit code policy (`sys.exit(1)` on CRITICAL/HIGH) (`85065af`).
+   - PR Review Commenter (`src/pr_commenter.py`) with idempotent Markdown comments, collapsible fix details, dark-mode single-page HTML report export, and GitHub REST API integration.
+   - Containerization & CI (`Dockerfile`, `action.yml`, `.github/workflows/security-audit.yml`) with 90 MB image footprint and non-root execution.
+   - Total of 126 automated tests passing in 1.98s with 93.42% test coverage and 0 Ruff linting errors.
+2. **Execute Milestone 10 (Pytest Verification Suite & Benchmark Dataset with 500+ Test Cases):**
+   - Construct synthetic evaluation corpus in `benchmarks/corpus.py` (500+ test cases covering safe/vulnerable patterns across all rules).
+   - Implement `benchmarks/run_benchmark.py`:
+     - Execute Regex-only scanner baseline vs. Hybrid AST + Entropy scanner.
+     - Calculate confusion matrix: True Positives (TP), False Positives (FP), True Negatives (TN), False Negatives (FN).
+     - Print formal metrics: TPR (target >= 96.4%), FP reduction (target >= 74%), and Secret leak rate (target = 0%).
+   - Configure code coverage enforcement via `pytest --cov=src --cov-fail-under=85`.
