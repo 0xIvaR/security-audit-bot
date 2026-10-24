@@ -230,8 +230,8 @@
 | **M1: Baseline** | 2026-10-24 | Automated Pytest & Ruff | `d3becf4` | `pyproject.toml`, `models.py`, `main.py`, test suite (98% cov) |
 | **M2: Git Diff** | 2026-10-24 | Automated Pytest & Diff Benchmark | `295f869` | `diff_parser.py`, 16 unit tests, live git diff integration |
 | **M3: Secrets** | 2026-10-24 | Automated Pytest & Synthetic Fixtures | `8bf644b` | `secret_scanner.py`, 23 secret tests, 0% leak rate |
-| **M4: AST Sinks** | 2026-10-24 | Automated Pytest & Ruff | Pending | `ast_analyzer.py`, 29 AST tests, OWASP execution sinks |
-| **M5: SQLi AST** | 2026-10-24 | Automated Pytest & Ruff | Pending | Dynamic SQLi detector, parameterized query immunity, safe pass logic |
+| **M4: AST Sinks** | 2026-10-24 | Automated Pytest & Ruff | `a1d319f` | `ast_analyzer.py`, 29 AST tests, OWASP execution sinks |
+| **M5: SQLi AST** | 2026-10-24 | Automated Pytest & Ruff | `a1d319f` | Dynamic SQLi detector, parameterized query immunity, safe pass logic |
 | **M6: OSV Batch** | — | — | — | `dep_scanner.py`, OSV batch integration |
 | **M7: Policy Gate**| — | — | — | `aggregator.py`, exit code policy logic |
 | **M8: Commenter** | — | — | — | `pr_commenter.py`, idempotent upsert |
