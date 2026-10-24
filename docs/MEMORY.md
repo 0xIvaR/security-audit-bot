@@ -46,9 +46,9 @@ When generating code or resuming work with any AI model, enforce the following c
 | **M1: Baseline** | Project setup, `pyproject.toml`, Pydantic models (`src/models.py`), CLI args | ✅ Completed | `python -m src.main --help` passes; 98% coverage |
 | **M2: Git Diff** | `src/diff_parser.py` parsing `git diff --unified=0` into `DiffFile` models | ✅ Completed | Sub-second diff parsing & changed-line mapper (98% cov) |
 | **M3: Secrets** | `src/secret_scanner.py` (Compiled regex + Shannon entropy $> 4.5$) | ✅ Completed | Tier 1 (Regex) + Tier 2 (Entropy) + Tier 3 (Allowlist) + Masking (96% cov) |
-| **M4: AST Sinks** | `src/ast_analyzer.py` (`ast.NodeVisitor` for `eval`, `exec`, `shell=True`, etc.) | 🟡 Next Up | Catches code sinks; ignores comments/docstrings |
-| **M5: SQLi AST** | AST detection of dynamic SQL (`JoinedStr`, `BinOp`, `Mod`, `.format()`) | ⬜ Pending | Parameterized tuples pass; f-strings flagged |
-| **M6: OSV Batch** | `src/dep_scanner.py` (`requirements.txt`, `package.json`, batch API $< 650\text{ ms}$) | ⬜ Pending | Returns CVEs/GHSAs for vulnerable test manifests |
+| **M4: AST Sinks** | `src/ast_analyzer.py` (`ast.NodeVisitor` for `eval`, `exec`, `shell=True`, etc.) | ✅ Completed | Catches code sinks; ignores comments/docstrings |
+| **M5: SQLi AST** | AST detection of dynamic SQL (`JoinedStr`, `BinOp`, `Mod`, `.format()`) | ✅ Completed | Parameterized tuples pass; f-strings flagged |
+| **M6: OSV Batch** | `src/dep_scanner.py` (`requirements.txt`, `package.json`, batch API $< 650\text{ ms}$) | 🟡 Next Up | Returns CVEs/GHSAs for vulnerable test manifests |
 | **M7: Policy Gate** | `src/aggregator.py` (Deduplication, sorting, `sys.exit(1)` on CRITICAL/HIGH) | ⬜ Pending | Blocks merge on CRITICAL; passes clean PRs |
 | **M8: Commenter** | `src/pr_commenter.py` (Idempotent Markdown upsert via GitHub API) | ⬜ Pending | Patches existing comment with zero spam |
 | **M9: Docker/CI** | `Dockerfile` (non-root `uid 1001`) + `.github/workflows/security-audit.yml` | ⬜ Pending | GitHub Actions runs and completes in $< 4.8\text{s}$ |
@@ -82,17 +82,14 @@ When generating code or resuming work with any AI model, enforce the following c
 ---
 
 ## 6. Immediate Next Steps & Checkpoints
-1. **Milestones 1, 2 & 3 Completed:**
+1. **Milestones 1, 2, 3, 4 & 5 Completed:**
    - Baseline models, configuration, and CLI harness operational (`1bbb9ab`).
    - Diff parser (`src/diff_parser.py`) executing sub-second git diff and line mapping (`b0c61a0`).
-   - Hybrid Secret Scanner (`src/secret_scanner.py`) implementing Tier 1 (Regex), Tier 2 (Shannon Entropy > 4.5), Tier 3 (Allowlist), and mandatory masking (`redact_secret()`).
-   - 58 automated tests passing with 96% coverage and 0 Ruff linting errors.
-2. **Execute Milestone 4 (Python AST Static Analyzer for Sinks):**
-   - Implement `src/ast_analyzer.py` subclassing `ast.NodeVisitor`.
-   - Intersect `node.lineno` with `DiffFile.added_lines` to analyze PR added lines only.
-   - Detect OWASP dangerous code execution sinks (`eval`, `exec`, `compile` -> `AST-001`).
-   - Detect insecure deserialization (`pickle.load/loads`, unsafe `yaml.load` -> `AST-002`).
-   - Detect command injection (`subprocess(shell=True)`, `os.system`, `os.popen` -> `AST-003`).
-   - Detect sensitive credential assignments (`password = '...'` -> `AST-005`).
-   - Detect weak cryptographic hashing (`hashlib.md5/sha1` -> `AST-006`).
-   - Author unit tests in `tests/test_ast_analyzer.py`.
+   - Hybrid Secret Scanner (`src/secret_scanner.py`) implementing Tier 1 (Regex), Tier 2 (Shannon Entropy > 4.5), Tier 3 (Allowlist), and mandatory masking (`redact_secret()`) (`b52b482`).
+   - AST Static Analyzer (`src/ast_analyzer.py`) implementing OWASP execution sinks (`AST-001`), deserialization (`AST-002`), command injection (`AST-003`), SQL injection taint detection (`AST-004`), credential assignments (`AST-005`), and weak hashes (`AST-006`).
+   - Total of 88 automated tests passing in 0.79s with 93.71% test coverage and 0 Ruff linting errors.
+2. **Execute Milestone 6 (Dependency Manifest Parser & OSV.dev Batch CVE Engine):**
+   - Implement `src/dep_scanner.py` parsing pinned packages from `requirements.txt` (PyPI) and `package.json` (npm).
+   - Construct single batch HTTP request to `POST https://api.osv.dev/v1/querybatch` with connection reuse and 3.0s timeout.
+   - Map vulnerabilities back to physical manifest lines and emit `Finding` records with category `DEPENDENCY_CVE`.
+   - Author unit tests in `tests/test_dep_scanner.py` with mocked network responses.

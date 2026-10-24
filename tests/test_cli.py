@@ -105,3 +105,35 @@ class TestCLIMain:
         assert "🚨 FINDINGS (1 issues detected):" in captured.out
         assert "SEC-001" in captured.out
         assert "AKIA************CDEF" in captured.out
+
+    @patch("src.diff_parser.get_diff")
+    @patch("src.ast_analyzer.scan_python_source")
+    def test_main_with_ast_findings(self, mock_scan_source, mock_get_diff, capsys):
+        from src.models import DiffFile, Finding, ScannerCategory, Severity
+
+        mock_get_diff.return_value = [
+            DiffFile(
+                file_path="src/query.py",
+                added_lines={1: 'cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")'},
+            )
+        ]
+        mock_scan_source.return_value = [
+            Finding(
+                rule_id="AST-004",
+                category=ScannerCategory.AST_OWASP,
+                severity=Severity.HIGH,
+                title="Dynamic SQL query construction (SQL Injection vulnerability)",
+                description="Potential SQL injection detected.",
+                file_path="src/query.py",
+                line_number=1,
+                snippet='cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")',
+                remediation="Use parameterized queries.",
+            )
+        ]
+        exit_code = main(["--base", "a1b2c3d4", "--head", "e5f6a7b8"])
+        assert exit_code == 0
+        captured = capsys.readouterr()
+        assert "AST Static Analyzer" in captured.out
+        assert "1 vulnerabilities flagged" in captured.out
+        assert "AST-004" in captured.out
+        assert "Dynamic SQL query construction" in captured.out

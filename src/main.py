@@ -118,6 +118,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[!] Git Diff Error          : {exc}", file=sys.stderr)
             return 1
 
+        from src.ast_analyzer import scan_diff_for_ast_vulnerabilities
         from src.secret_scanner import scan_diff_for_secrets
 
         sec_start = time.perf_counter()
@@ -129,10 +130,21 @@ def main(argv: list[str] | None = None) -> int:
             f"(Entropy > 4.5 bits/char) [{sec_duration_ms:.0f} ms]"
         )
 
-        if secret_findings:
+        ast_start = time.perf_counter()
+        ast_findings = scan_diff_for_ast_vulnerabilities(diff_files)
+        ast_duration_ms = (time.perf_counter() - ast_start) * 1000.0
+        ast_status = "[✓]" if not ast_findings else "[!]"
+        print(
+            f"{ast_status} AST Static Analyzer     : {len(ast_findings)} vulnerabilities flagged "
+            f"[{ast_duration_ms:.0f} ms]"
+        )
+
+        all_findings = secret_findings + ast_findings
+
+        if all_findings:
             print("-" * 80)
-            print(f"🚨 FINDINGS ({len(secret_findings)} issues detected):")
-            for f in secret_findings:
+            print(f"🚨 FINDINGS ({len(all_findings)} issues detected):")
+            for f in all_findings:
                 print(f"\n  [{f.severity.value}] {f.rule_id}: {f.title}")
                 print(f"  Location : {f.file_path}:{f.line_number}")
                 if f.snippet:
