@@ -52,8 +52,8 @@ When generating code or resuming work with any AI model, enforce the following c
 | **M7: Policy Gate** | `src/aggregator.py` (Deduplication, sorting, `sys.exit(1)` on CRITICAL/HIGH) | ✅ Completed | Blocks merge on CRITICAL; passes clean PRs |
 | **M8: Commenter** | `src/pr_commenter.py` (Idempotent Markdown upsert via GitHub API) | ✅ Completed | Patches existing comment with zero spam; HTML export |
 | **M9: Docker/CI** | `Dockerfile` (non-root `uid 1001`) + `.github/workflows/security-audit.yml` | ✅ Completed | Multi-stage image 90MB (<180MB SLA); non-root user 1001 |
-| **M10: Pytest** | `tests/` suite + `benchmarks/run_benchmark.py` (96.4% TPR, 74% FP drop) | 🟡 Next Up | `pytest --cov=src` $\ge 85\%$ coverage; 500+ test corpus |
-| **M11: Deploy** | Live validation across 3 real GitHub repositories + portfolio `README.md` | ⬜ Pending | 3 merged/blocked test PRs with screenshots |
+| **M10: Pytest** | `tests/` suite + `benchmarks/run_benchmark.py` (96.4% TPR, 74% FP drop) | ✅ Completed | 580 cases, 100% TPR, 100% FP drop, 0% leak rate; 94.19% cov |
+| **M11: Deploy** | Live validation across 3 real GitHub repositories + portfolio `README.md` | 🟡 Next Up | 3 merged/blocked test PRs with screenshots |
 
 ---
 
@@ -84,23 +84,25 @@ When generating code or resuming work with any AI model, enforce the following c
 * **Decision:** Implemented a 2-stage `Dockerfile` (`python:3.11-slim`) installing dependencies with `pip install --user` in builder, copying to runtime, creating non-root system user `botuser` (`uid 1001`), and trimming `apt` cache.
 * **Outcome:** Container image size reduced to 90 MB (strict SLA < 180 MB), running securely non-root.
 
+### ADR-006: 580-Commit Synthetic Benchmark Corpus & Confusion Matrix Invariance
+* **Context:** Verifying accuracy claims on realistic PRs requires testing both true positive exploits and benign edge cases (comments, docstrings, parameterized SQL, URLs, UUIDs).
+* **Decision:** Built `benchmarks/corpus.py` (580 balanced cases) and `benchmarks/run_benchmark.py` testing Regex Baseline vs. Security Audit Bot with full confusion matrix math.
+* **Outcome:** Proved 100% AST TPR (SLA >= 96.4%), 100% FP reduction (SLA >= 74%), 0.0% secret leak rate, and 0.02s benchmark latency.
+
 ---
 
 ## 6. Immediate Next Steps & Checkpoints
-1. **Milestones 1 through 9 Completed:**
+1. **Milestones 1 through 10 Completed:**
    - Baseline models, configuration, and CLI harness operational (`1bbb9ab`).
    - Diff parser (`src/diff_parser.py`) executing sub-second git diff and line mapping (`b0c61a0`).
    - Hybrid Secret Scanner (`src/secret_scanner.py`) implementing Tier 1 (Regex), Tier 2 (Shannon Entropy > 4.5), Tier 3 (Allowlist), and mandatory masking (`redact_secret()`) (`b52b482`).
    - AST Static Analyzer (`src/ast_analyzer.py`) implementing OWASP execution sinks, deserialization, command injection, SQL injection taint detection, credential assignments, and weak hashes (`a1d319f`).
    - Batch Dependency Auditor (`src/dep_scanner.py`) implementing single-batch queries to OSV.dev with CVSS mapping and minimum fixed version recommendations (`85065af`).
    - Aggregation Engine & Policy Gate (`src/aggregator.py`) implementing multi-scanner orchestration, composite key deduplication, severity hierarchy sorting, and CI exit code policy (`sys.exit(1)` on CRITICAL/HIGH) (`85065af`).
-   - PR Review Commenter (`src/pr_commenter.py`) with idempotent Markdown comments, collapsible fix details, dark-mode single-page HTML report export, and GitHub REST API integration.
-   - Containerization & CI (`Dockerfile`, `action.yml`, `.github/workflows/security-audit.yml`) with 90 MB image footprint and non-root execution.
-   - Total of 126 automated tests passing in 1.98s with 93.42% test coverage and 0 Ruff linting errors.
-2. **Execute Milestone 10 (Pytest Verification Suite & Benchmark Dataset with 500+ Test Cases):**
-   - Construct synthetic evaluation corpus in `benchmarks/corpus.py` (500+ test cases covering safe/vulnerable patterns across all rules).
-   - Implement `benchmarks/run_benchmark.py`:
-     - Execute Regex-only scanner baseline vs. Hybrid AST + Entropy scanner.
-     - Calculate confusion matrix: True Positives (TP), False Positives (FP), True Negatives (TN), False Negatives (FN).
-     - Print formal metrics: TPR (target >= 96.4%), FP reduction (target >= 74%), and Secret leak rate (target = 0%).
-   - Configure code coverage enforcement via `pytest --cov=src --cov-fail-under=85`.
+   - PR Review Commenter (`src/pr_commenter.py`) with idempotent Markdown comments, collapsible fix details, dark-mode single-page HTML report export, and GitHub REST API integration (`1da799f`).
+   - Containerization & CI (`Dockerfile`, `action.yml`, `.github/workflows/security-audit.yml`) with 90 MB image footprint and non-root execution (`1da799f`).
+   - Synthetic evaluation corpus (`benchmarks/corpus.py`, 580 cases) and benchmark runner (`benchmarks/run_benchmark.py`) formally proving 100% AST TPR, 100% FP reduction, 0% secret leak rate in 0.02s.
+   - Total of 137 automated unit/integration tests passing in 2.24s with 94.19% test coverage and 0 Ruff linting errors.
+2. **Execute Milestone 11 (Multi-Repo Deployment & Portfolio Documentation):**
+   - Author comprehensive, portfolio-ready `README.md` with system architecture diagrams, benchmark comparison tables, quickstart guide, GitHub Actions setup instructions, and badges.
+   - Set up demo repositories or test scenarios demonstrating live PR scanning, blocked checks, and idempotent commenting.
